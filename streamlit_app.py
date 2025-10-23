@@ -1165,8 +1165,7 @@ if pending_q:
                     user_question=question, metric_catalog_text=catalog_text
                 )
                 plan_response = generate_answer_with_model(prompt, provider="gemini")
-            
-            # --- ⬇️ 여기가 핵심 수정 부분입니다 ⬇️ ---
+
 
             # 1. 새로 만든 JSON 파서로 응답을 파싱합니다.
             plan_data, used_keys = _parse_plan_from_llm(plan_response)
@@ -1226,7 +1225,6 @@ if pending_q:
             st.session_state["hide_tables_this_run"] = False
             st.rerun()
 
-            # --- ⬆️ 수정 완료 ⬆️ ---
 
         # 3️⃣ 일반 Q&A
         else:
@@ -1244,7 +1242,7 @@ if pending_q:
                 catalog_text = metric_catalog_to_text(catalog)
                 trend_summary_text = summarize_trend_for_category(trend_df, store_category)
 
-                if any(k in question for k in ["인구", "거주", "연령", "고객층", "유동", "주거", "성비"]):
+                if any(k in question for k in ["인구", "거주", "연령", "고객층", "유동", "주거", "성비", "생활", "생활권"]):
                     df_pop = load_population()
                     dong_name_norm = st.session_state.get("current_dong")
                     if dong_name_norm:
@@ -1294,4 +1292,5 @@ if pending_q:
         with st.chat_message("assistant"):
 
             st.error("답변 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.") 
+
 
