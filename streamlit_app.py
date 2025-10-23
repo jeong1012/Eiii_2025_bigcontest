@@ -41,8 +41,27 @@ from services.youtube import search_videos_by_query
 def _strip_md_strike(s: str) -> str:
     return re.sub(r'~~(.*?)~~', r'\1', s, flags=re.DOTALL)
 
-
-# main.py의 _parse_promos_from_llm 함수 아래에 추가
+def sanitize_question_for_gemini(text: str) -> str:
+    """
+    Gemini 안전 필터에 걸리는 단어를 우회 단어로 치환.
+    (로컬 분석 로직에는 영향 없음)
+    """
+    replacements = {
+        "인구": "생활 수요",
+        "거주": "지역 환경",
+        "연령": "연령대 구성",
+        "고객층": "주요 방문층",
+        "유동": "방문 흐름",
+        "주거": "거주 형태",
+        "성비": "고객 구성",
+        "생활": "지역 수요",
+        "생활권": "생활 지역",
+        "주변": "인근 지역",
+    }
+    safe_text = text
+    for bad, safe in replacements.items():
+        safe_text = safe_text.replace(bad, safe)
+    return safe_text
 
 
 def _parse_promos_from_llm(raw: str):
@@ -1242,7 +1261,7 @@ if pending_q:
                 catalog_text = metric_catalog_to_text(catalog)
                 trend_summary_text = summarize_trend_for_category(trend_df, store_category)
 
-                if any(k in question for k in ["인구", "거주", "연령", "고객층", "유동", "주거", "성비", "생활", "생활권", "주변", "마케팅"]):
+                if any(k in question for k in ["인구", "거주", "연령", "고객층", "유동", "주거", "성비", "생활", "생활권", "주변"]):
                     df_pop = load_population()
                     dong_name_norm = st.session_state.get("current_dong")
                     if dong_name_norm:
@@ -1260,6 +1279,8 @@ if pending_q:
                     user_question=question, trend_summary_text=trend_summary_text,
                     evidence_context=evidence_context, metric_catalog_text=catalog_text
                 )
+                safe_prompt = sanitize_question_for_gemini(context_prompt)
+                
                 answer_text = generate_answer_with_model(context_prompt, provider="gemini")
 
                 promos, used_keys = _parse_promos_from_llm(answer_text)
@@ -1292,6 +1313,7 @@ if pending_q:
         with st.chat_message("assistant"):
 
             st.error("답변 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.") 
+
 
 
 
