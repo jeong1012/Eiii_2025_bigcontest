@@ -1248,8 +1248,8 @@ if pending_q:
                 sensitive_keywords = ["인구", "거주", "연령", "성비", "고객층", "주거"]
                 proxy_keywords = ["미래 타겟", "미래타겟", "향후 고객", "예상 고객", "미래 고객층"]
                 
-                # population 실행 조건
-                trigger_population = any(k in question for k in sensitive_keywords + proxy_keywords)
+                trigger_sensitive = any(k in question for k in sensitive_keywords)
+                trigger_proxy = any(k in question for k in proxy_keywords)
                 
                 # --- Gemini 안전 프롬프트용 세탁 ---
                 safe_question = question
@@ -1261,7 +1261,7 @@ if pending_q:
                     safe_question = safe_question.replace(bad, "")
                 
                 # --- population 실행 (미래 타겟도 포함해서) ---
-                if trigger_population:
+                if trigger_sensitive or trigger_proxy:
                     try:
                         df_pop = load_population()
                         dong_name_norm = st.session_state.get("current_dong")
@@ -1316,6 +1316,7 @@ if pending_q:
         print("❌ Chatbot block error:", e)
         with st.chat_message("assistant"):
             st.error("답변 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.") 
+
 
 
 
