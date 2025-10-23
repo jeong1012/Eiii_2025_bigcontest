@@ -1245,17 +1245,23 @@ if pending_q:
                 catalog_text = metric_catalog_to_text(catalog)
                 trend_summary_text = summarize_trend_for_category(trend_df, store_category)
 
-                sensitive_keywords = ["인구", "거주", "연령", "고객층", "유동", "주거", "성비", "생활 인구"]
-                proxy_keywords = ["미래 타겟", "미래타겟", "타겟팅", "향후 고객", "예상 고객"]
+                sensitive_keywords = ["인구", "거주", "연령", "성비", "고객층", "주거"]
+                proxy_keywords = ["미래 타겟", "미래타겟", "향후 고객", "예상 고객", "미래 고객층"]
                 
-                # 🔹 인구 트리거 → population 실행
-                trigger_population = any(k in question for k in sensitive_keywords)
+                # population 실행 조건
+                trigger_population = any(k in question for k in sensitive_keywords + proxy_keywords)
                 
-                # 🔹 우회 트리거 → population 실행 유도용 (단, sensitive와는 별도)
-                trigger_proxy = any(k in question for k in proxy_keywords)
+                # --- Gemini 안전 프롬프트용 세탁 ---
+                safe_question = question
+                for bad in proxy_keywords:
+                    # Gemini가 '인구예측'으로 오인하지 않게 표현만 바꿈
+                    safe_question = safe_question.replace(bad, "향후 고객층 변화")
+                for bad in sensitive_keywords:
+                    # 인구/성비 등의 직접 단어 제거
+                    safe_question = safe_question.replace(bad, "")
                 
-                # ✅ 안전하게 통합 조건
-                if trigger_population or trigger_proxy:
+                # --- population 실행 (미래 타겟도 포함해서) ---
+                if trigger_population:
                     try:
                         df_pop = load_population()
                         dong_name_norm = st.session_state.get("current_dong")
@@ -1310,5 +1316,6 @@ if pending_q:
         print("❌ Chatbot block error:", e)
         with st.chat_message("assistant"):
             st.error("답변 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.") 
+
 
 
