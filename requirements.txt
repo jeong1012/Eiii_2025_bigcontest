@@ -1,6 +1,6 @@
 geopandas==1.1.1
 google-api-python-client==2.185.0
-google-generativeai==0.8.3
+google-generativeai==0.8.5
 matplotlib==3.10.7
 numpy==2.3.4
 openai==2.6.0
@@ -15,5 +15,6 @@ Shapely==2.1.2
 streamlit==1.50.0
 streamlit-searchbox==0.1.23
 tqdm==4.67.1
+
 
 
