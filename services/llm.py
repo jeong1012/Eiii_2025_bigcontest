@@ -67,18 +67,8 @@ def generate_answer_with_model(prompt: str, provider: str = "gemini") -> str:
     if provider == "gemini":
         import google.generativeai as genai
         genai.configure(api_key=os.getenv("GOOGLE_API_KEY"))
-        model = genai.GenerativeModel(
-            "gemini-2.5-flash",
-            safety_settings=[
-                {"category": "HARM_CATEGORY_SEXUAL", "threshold": "BLOCK_NONE"},
-                {"category": "HARM_CATEGORY_HARASSMENT", "threshold": "BLOCK_NONE"},
-                {"category": "HARM_CATEGORY_HATE_SPEECH", "threshold": "BLOCK_NONE"},
-                {"category": "HARM_CATEGORY_DANGEROUS_CONTENT", "threshold": "BLOCK_NONE"},
-            ],
-        )
-        response = model.generate_content(prompt)
-        return response.text  
-
+        model = genai.GenerativeModel('gemini-2.5-flash')
+        return model.start_chat(history=[]).send_message(prompt).text
     elif provider == "openai":
         from openai import OpenAI
         client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
@@ -305,5 +295,4 @@ END CONTEXT
 (출력 형식 — 아주 중요)
 1) 첫 줄: 위 스키마에 맞는 **순수 JSON 객체 1개**만 출력
 2) 다음 줄: `EVIDENCE_KEYS: key1,key2,key3`
-
 """.strip()
