@@ -1,5 +1,4 @@
 # services/plots.py
-import koreanize_matplotlib
 from __future__ import annotations
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -7,6 +6,7 @@ import seaborn as sns
 import plotly.graph_objects as go
 import io
 from typing import Optional, Tuple
+import koreanize_matplotlib
 
 # -------------------------------------
 # 공통 유틸: Matplotlib → 이미지 버퍼 변환
@@ -177,5 +177,6 @@ def plot_radar_chart(current_year_scores, previous_year_scores, labels,
         margin=dict(l=40, r=60, t=60, b=60)
     )
     return fig
+
 
 
