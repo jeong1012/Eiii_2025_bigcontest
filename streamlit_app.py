@@ -1246,10 +1246,14 @@ if pending_q:
                 trend_summary_text = summarize_trend_for_category(trend_df, store_category)
                 
                 sensitive_keywords = ["인구", "거주", "연령", "고객층", "유동", "주거", "성비"]
-                exclude_keywords = ["미래 타겟", "미래타겟", "타겟팅", "향후 고객", "예상 고객", "생활", "생활권", "주변"]
-                
-                # 조건문
-                if any(k in question for k in sensitive_keywords) and not any(x in question for x in exclude_keywords):
+                additional_triggers = ["미래 타겟", "미래타겟", "타겟팅", "향후 고객", "예상 고객", "생활", "생활권", "주변"]
+
+                def is_population_trigger(q: str) -> bool:
+                    combined = sensitive_keywords + additional_triggers
+                    return any(k in q for k in combined)
+
+                # 사용 예시
+                if is_population_trigger(question):
                     df_pop = load_population()
                     dong_name_norm = st.session_state.get("current_dong")
                     if dong_name_norm:
@@ -1260,6 +1264,7 @@ if pending_q:
                             evidence_context += f"\n\n[행정동 인구 데이터 기반]\n인구 데이터를 불러오는 중 오류 발생: {e}"
                     else:
                         evidence_context += "\n\n[행정동 인구 데이터 기반]\n주소에서 행정동을 추출할 수 없습니다."
+               
 
                 context_prompt = build_marketing_prompt(
                     store_name=store_name, store_category=store_category,
@@ -1298,5 +1303,6 @@ if pending_q:
         print("❌ Chatbot block error:", e)
         with st.chat_message("assistant"):
             st.error("답변 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.") 
+
 
 
