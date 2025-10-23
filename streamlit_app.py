@@ -1245,48 +1245,25 @@ if pending_q:
                 catalog_text = metric_catalog_to_text(catalog)
                 trend_summary_text = summarize_trend_for_category(trend_df, store_category)
 
-                sensitive_keywords = ["인구", "거주", "연령", "성비", "고객층", "주거"]
-                proxy_keywords = ["미래 타겟", "미래타겟", "향후 고객", "예상 고객", "미래 고객층"]
-                
-                trigger_sensitive = any(k in question for k in sensitive_keywords)
-                trigger_proxy = any(k in question for k in proxy_keywords)
-                
-                # --- Gemini 안전 프롬프트용 세탁 ---
-                safe_question = question
-                for bad in proxy_keywords:
-                    # Gemini가 '인구예측'으로 오인하지 않게 표현만 바꿈
-                    safe_question = safe_question.replace(bad, "향후 고객층 변화")
-                for bad in sensitive_keywords:
-                    # 인구/성비 등의 직접 단어 제거
-                    safe_question = safe_question.replace(bad, "")
-                
-                # --- population 실행 (미래 타겟도 포함해서) ---
-                if trigger_sensitive or trigger_proxy:
-                    try:
-                        df_pop = load_population()
-                        dong_name_norm = st.session_state.get("current_dong")
-                        if dong_name_norm:
+                if any(k in question for k in ["인구", "거주", "연령", "고객층", "유동", "주거", "성비", "생활"]):
+                    df_pop = load_population()
+                    dong_name_norm = st.session_state.get("current_dong")
+                    if dong_name_norm:
+                        try:
                             population_insight = generate_population_insight(df_pop, dong_name_norm)
                             evidence_context += f"\n\n[행정동 인구 데이터 기반]\n{population_insight}"
-                        else:
-                            evidence_context += "\n\n[행정동 인구 데이터 기반]\n주소에서 행정동을 추출할 수 없습니다."
-                    except Exception as e:
-                        evidence_context += f"\n\n[행정동 인구 데이터 기반]\n인구 데이터를 불러오는 중 오류 발생: {e}"
-                else:
-                    evidence_context += "\n\n[행정동 인구 데이터 기반]\n주소에서 행정동을 추출할 수 없습니다."
+                        except Exception as e:
+                            evidence_context += f"\n\n[행정동 인구 데이터 기반]\n인구 데이터를 불러오는 중 오류 발생: {e}"
+                    else:
+                        evidence_context += "\n\n[행정동 인구 데이터 기반]\n주소에서 행정동을 추출할 수 없습니다."
 
-                # ✅ 6️⃣ LLM 프롬프트 생성 및 호출
                 context_prompt = build_marketing_prompt(
                     store_name=store_name, store_category=store_category,
                     age_comparison_text="", delivery_rank_str="",
-                    user_question=safe_question,  # ← 정제된 질문 전달
-                    trend_summary_text=trend_summary_text,
-                    evidence_context=evidence_context,
-                    metric_catalog_text=catalog_text
+                    user_question=question, trend_summary_text=trend_summary_text,
+                    evidence_context=evidence_context, metric_catalog_text=catalog_text
                 )
-
                 answer_text = generate_answer_with_model(context_prompt, provider="gemini")
-                
 
                 promos, used_keys = _parse_promos_from_llm(answer_text)
                 final_html = make_promo_cards_html(promos)
@@ -1313,19 +1290,7 @@ if pending_q:
                 st.session_state["hide_tables_this_run"] = False
                 st.rerun()
 
-    
-
     except Exception as e:
         print("❌ Chatbot block error:", e)
         with st.chat_message("assistant"):
             st.error("답변 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.") 
-
-
-
-
-
-
-
-
-
-
