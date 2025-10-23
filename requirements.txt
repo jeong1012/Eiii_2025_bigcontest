@@ -6,7 +6,7 @@ numpy==2.3.4
 openai==2.6.0
 pandas==2.3.3
 plotly==6.3.1
-protobuf==4.25.3
+protobuf==5.29.5
 python-dotenv==1.1.1
 requests==2.32.5
 scikit-learn==1.7.2
@@ -15,6 +15,7 @@ Shapely==2.1.2
 streamlit==1.50.0
 streamlit-searchbox==0.1.23
 tqdm==4.67.1
+
 
 
 
