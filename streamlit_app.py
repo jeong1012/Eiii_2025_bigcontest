@@ -1286,6 +1286,7 @@ if pending_q:
                 )
 
                 answer_text = generate_answer_with_model(context_prompt, provider="gemini")
+                
 
                 promos, used_keys = _parse_promos_from_llm(answer_text)
                 final_html = make_promo_cards_html(promos)
@@ -1312,10 +1313,13 @@ if pending_q:
                 st.session_state["hide_tables_this_run"] = False
                 st.rerun()
 
+    st.write("DEBUG:", question, trigger_sensitive, trigger_proxy)
+
     except Exception as e:
         print("❌ Chatbot block error:", e)
         with st.chat_message("assistant"):
             st.error("답변 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.") 
+
 
 
 
