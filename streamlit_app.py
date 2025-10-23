@@ -1244,8 +1244,12 @@ if pending_q:
                 )
                 catalog_text = metric_catalog_to_text(catalog)
                 trend_summary_text = summarize_trend_for_category(trend_df, store_category)
-
-                if any(k in question for k in ["인구", "거주", "연령", "고객층", "유동", "주거", "성비", "생활 인구"]):
+                
+                sensitive_keywords = ["인구", "거주", "연령", "고객층", "유동", "주거", "성비"]
+                exclude_keywords = ["미래 타겟", "미래타겟", "타겟팅", "향후 고객", "예상 고객", , "생활", "생활권", "주변"]
+                
+                # 조건문
+                if any(k in question for k in sensitive_keywords) and not any(x in question for x in exclude_keywords):
                     df_pop = load_population()
                     dong_name_norm = st.session_state.get("current_dong")
                     if dong_name_norm:
@@ -1294,3 +1298,4 @@ if pending_q:
         print("❌ Chatbot block error:", e)
         with st.chat_message("assistant"):
             st.error("답변 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.") 
+
