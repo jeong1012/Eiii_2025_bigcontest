@@ -15,6 +15,7 @@ import streamlit.components.v1 as components
 from dotenv import load_dotenv
 from streamlit_searchbox import st_searchbox
 import bisect
+import koreanize_matplotlib
 
 # --- Service Imports ---
 from services.population import load_population, generate_population_insight
@@ -1294,4 +1295,5 @@ if pending_q:
         print("❌ Chatbot block error:", e)
         with st.chat_message("assistant"):
             st.error("답변 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.") 
+
 
