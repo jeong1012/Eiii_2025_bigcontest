@@ -1250,8 +1250,6 @@ if pending_q:
                 
                 trigger_sensitive = any(k in question for k in sensitive_keywords)
                 trigger_proxy = any(k in question for k in proxy_keywords)
-
-                st.write("DEBUG:", question, trigger_sensitive, trigger_proxy)
                 
                 # --- Gemini 안전 프롬프트용 세탁 ---
                 safe_question = question
@@ -1267,14 +1265,12 @@ if pending_q:
                     try:
                         df_pop = load_population()
                         dong_name_norm = st.session_state.get("current_dong")
-                        st.write("DEBUG DONG:", dong_name_norm)
                         if dong_name_norm:
                             population_insight = generate_population_insight(df_pop, dong_name_norm)
                             evidence_context += f"\n\n[행정동 인구 데이터 기반]\n{population_insight}"
                         else:
                             evidence_context += "\n\n[행정동 인구 데이터 기반]\n주소에서 행정동을 추출할 수 없습니다."
                     except Exception as e:
-                        st.write("DEBUG population error:", e)
                         evidence_context += f"\n\n[행정동 인구 데이터 기반]\n인구 데이터를 불러오는 중 오류 발생: {e}"
                 else:
                     evidence_context += "\n\n[행정동 인구 데이터 기반]\n주소에서 행정동을 추출할 수 없습니다."
@@ -1323,6 +1319,7 @@ if pending_q:
         print("❌ Chatbot block error:", e)
         with st.chat_message("assistant"):
             st.error("답변 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.") 
+
 
 
 
