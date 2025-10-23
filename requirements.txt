@@ -15,6 +15,7 @@ Shapely==2.1.2
 streamlit==1.50.0
 streamlit-searchbox==0.1.23
 tqdm==4.67.1
+openpyxl==3.1.5
 
 
 
