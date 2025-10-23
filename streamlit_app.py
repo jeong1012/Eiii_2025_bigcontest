@@ -1183,7 +1183,8 @@ if pending_q:
                     store_name=store_name, store_category=store_category,
                     user_question=question, metric_catalog_text=catalog_text
                 )
-                plan_response = generate_answer_with_model(prompt, provider="gemini")
+                plan_response = generate_answer_with_model(sanitize_question_for_gemini(prompt), provider="gemini")
+
 
 
             # 1. 새로 만든 JSON 파서로 응답을 파싱합니다.
@@ -1313,6 +1314,7 @@ if pending_q:
         with st.chat_message("assistant"):
 
             st.error("답변 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.") 
+
 
 
 
