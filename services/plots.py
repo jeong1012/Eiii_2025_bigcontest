@@ -1,7 +1,7 @@
 # services/plots.py
+import koreanize_matplotlib
 from __future__ import annotations
 import pandas as pd
-import koreanize_matplotlib
 import matplotlib.pyplot as plt
 import seaborn as sns
 import plotly.graph_objects as go
@@ -177,4 +177,5 @@ def plot_radar_chart(current_year_scores, previous_year_scores, labels,
         margin=dict(l=40, r=60, t=60, b=60)
     )
     return fig
+
 
