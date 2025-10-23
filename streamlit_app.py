@@ -1238,7 +1238,7 @@ if pending_q:
                     delivery_ratio=delivery_ratio
                 )
                 catalog = build_metric_catalog(
-                    analysis_df=analysis_df, store_category=store_category, age_ratio="age_ratio,
+                    analysis_df=analysis_df, store_category=store_category, age_ratio=age_ratio,
                     delivery_ratio=delivery_ratio, age_group_cols=age_group_cols,
                     gender_ratio=gender_ratio, visit_ratio=visit_ratio
                 )
@@ -1316,6 +1316,7 @@ if pending_q:
         print("❌ Chatbot block error:", e)
         with st.chat_message("assistant"):
             st.error("답변 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.") 
+
 
 
 
