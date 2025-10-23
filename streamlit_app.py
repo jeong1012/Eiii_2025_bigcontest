@@ -42,28 +42,9 @@ def _strip_md_strike(s: str) -> str:
     return re.sub(r'~~(.*?)~~', r'\1', s, flags=re.DOTALL)
 
 
-def neutralize_sensitive_terms_for_gemini(text: str) -> str:
-    """
-    Gemini의 개인정보 필터를 회피하기 위해 '인구, 거주, 연령, 성비' 등의 단어를
-    의미가 유지되도록 간접적인 표현으로 치환.
-    """
-    replacements = {
-        "인구": "생활권 규모",
-        "거주": "거점",
-        "연령": "나이대",
-        "성비": "남녀 비율",
-        "고객층": "방문층",
-        "주거": "생활권역",
-        "미래 타겟": "향후 대상 그룹",
-        "미래타겟": "향후 대상 그룹",
-        "생활": "활동권",
-        "생활권": "활동 범위",
-        "주변": "인근 지역"
-    }
-    for k, v in replacements.items():
-        text = text.replace(k, v)
-    return text
+# main.py의 _parse_promos_from_llm 함수 아래에 추가
 
+# main.py 파일 상단에 추가해주세요.
 
 def _parse_promos_from_llm(raw: str):
     """
@@ -1263,36 +1244,34 @@ if pending_q:
                 )
                 catalog_text = metric_catalog_to_text(catalog)
                 trend_summary_text = summarize_trend_for_category(trend_df, store_category)
-                
-                sensitive_keywords = ["인구", "거주", "연령", "고객층", "유동", "주거", "성비"]
-                additional_triggers = ["미래 타겟", "미래타겟", "타겟팅", "향후 고객", "예상 고객", "생활", "생활권", "주변"]
 
-                def is_population_trigger(q: str) -> bool:
-                    combined = sensitive_keywords + additional_triggers
-                    return any(k in q for k in combined)
-
-                # 사용 예시
-                if is_population_trigger(question):
-                    df_pop = load_population()
-                    dong_name_norm = st.session_state.get("current_dong")
-                    if dong_name_norm:
-                        try:
-                            population_insight = generate_population_insight(df_pop, dong_name_norm)
-                            evidence_context += f"\n\n[행정동 인구 데이터 기반]\n{population_insight}"
-                        except Exception as e:
-                            evidence_context += f"\n\n[행정동 인구 데이터 기반]\n인구 데이터를 불러오는 중 오류 발생: {e}"
-                    else:
-                        evidence_context += "\n\n[행정동 인구 데이터 기반]\n주소에서 행정동을 추출할 수 없습니다."
-               
-
-                context_prompt = build_marketing_prompt(
-                    store_name=store_name, store_category=store_category,
-                    age_comparison_text="", delivery_rank_str="",
-                    user_question=question, trend_summary_text=trend_summary_text,
-                    evidence_context=evidence_context, metric_catalog_text=catalog_text
-                )
-                safe_prompt = neutralize_sensitive_terms_for_gemini(context_prompt)
-                answer_text = generate_answer_with_model(safe_prompt, provider="gemini")
+            if any(k in question for k in ["인구", "거주", "연령", "고객층", "유동", "주거", "성비", "생활", "생활권", "주변", "미래 타겟", "미래타겟"]):
+                df_pop = load_population()
+                dong_name_norm = st.session_state.get("current_dong")
+                if dong_name_norm:
+                    population_insight = generate_population_insight(df_pop, dong_name_norm)
+                    evidence_context += f"\n\n[행정동 인구 데이터 기반]\n{population_insight}"
+                else:
+                    evidence_context += "\n\n[행정동 인구 데이터 기반]\n주소에서 행정동을 추출할 수 없습니다."
+            
+            # 대신 prompt 만들기 직전, Gemini에 보낼 질문에서는 금지어 제거
+            forbidden_terms = ["인구", "거주", "연령", "성비", "고객층", "주거", "생활", "생활권",]
+            filtered_question = question
+            for term in forbidden_terms:
+                filtered_question = filtered_question.replace(term, "")
+            
+            context_prompt = build_marketing_prompt(
+                store_name=store_name,
+                store_category=store_category,
+                age_comparison_text="",
+                delivery_rank_str="",
+                user_question=filtered_question,  # 🔥 여기서만 필터링된 질문 사용
+                trend_summary_text=trend_summary_text,
+                evidence_context=evidence_context,
+                metric_catalog_text=catalog_text
+            )
+            
+            answer_text = generate_answer_with_model(context_prompt, provider="gemini")
 
                 promos, used_keys = _parse_promos_from_llm(answer_text)
                 final_html = make_promo_cards_html(promos)
@@ -1323,7 +1302,3 @@ if pending_q:
         print("❌ Chatbot block error:", e)
         with st.chat_message("assistant"):
             st.error("답변 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.") 
-
-
-
-
