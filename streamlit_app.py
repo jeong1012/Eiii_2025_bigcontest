@@ -1245,33 +1245,27 @@ if pending_q:
                 catalog_text = metric_catalog_to_text(catalog)
                 trend_summary_text = summarize_trend_for_category(trend_df, store_category)
 
-                # ✅ 1️⃣ 민감어 리스트 (Gemini가 차단할 수 있는 단어)
                 sensitive_keywords = ["인구", "거주", "연령", "고객층", "유동", "주거", "성비", "생활 인구"]
-
-                # ✅ 2️⃣ 우회 트리거 리스트 (민감어를 안 써도 population.py 실행 유도)
                 proxy_keywords = ["미래 타겟", "미래타겟", "타겟팅", "향후 고객", "예상 고객"]
-
-                # ✅ 3️⃣ population.py 실행 조건
-                trigger_population = (
-                    any(k in question for k in sensitive_keywords)
-                    or any(k in question for k in proxy_keywords)
-                )
-
-                # ✅ 4️⃣ Gemini용 question 정제 (민감어는 제거하여 Cloud 차단 방지)
-                safe_question = question
-                for bad in sensitive_keywords:
-                    safe_question = safe_question.replace(bad, "")
-
-                # ✅ 5️⃣ population.py 실행
-                if trigger_population:
-                    df_pop = load_population()
-                    dong_name_norm = st.session_state.get("current_dong")
-                    if dong_name_norm:
-                        try:
+                
+                # 🔹 인구 트리거 → population 실행
+                trigger_population = any(k in question for k in sensitive_keywords)
+                
+                # 🔹 우회 트리거 → population 실행 유도용 (단, sensitive와는 별도)
+                trigger_proxy = any(k in question for k in proxy_keywords)
+                
+                # ✅ 안전하게 통합 조건
+                if trigger_population or trigger_proxy:
+                    try:
+                        df_pop = load_population()
+                        dong_name_norm = st.session_state.get("current_dong")
+                        if dong_name_norm:
                             population_insight = generate_population_insight(df_pop, dong_name_norm)
                             evidence_context += f"\n\n[행정동 인구 데이터 기반]\n{population_insight}"
-                        except Exception as e:
-                            evidence_context += f"\n\n[행정동 인구 데이터 기반]\n인구 데이터를 불러오는 중 오류 발생: {e}"
+                        else:
+                            evidence_context += "\n\n[행정동 인구 데이터 기반]\n주소에서 행정동을 추출할 수 없습니다."
+                    except Exception as e:
+                        evidence_context += f"\n\n[행정동 인구 데이터 기반]\n인구 데이터를 불러오는 중 오류 발생: {e}"
                     else:
                         evidence_context += "\n\n[행정동 인구 데이터 기반]\n주소에서 행정동을 추출할 수 없습니다."
 
@@ -1316,3 +1310,4 @@ if pending_q:
         print("❌ Chatbot block error:", e)
         with st.chat_message("assistant"):
             st.error("답변 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.") 
+
