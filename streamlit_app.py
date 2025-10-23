@@ -1245,33 +1245,33 @@ if pending_q:
                 catalog_text = metric_catalog_to_text(catalog)
                 trend_summary_text = summarize_trend_for_category(trend_df, store_category)
 
-            if any(k in question for k in ["인구", "거주", "연령", "고객층", "유동", "주거", "성비", "생활", "생활권", "주변", "미래 타겟", "미래타겟"]):
-                df_pop = load_population()
-                dong_name_norm = st.session_state.get("current_dong")
-                if dong_name_norm:
-                    population_insight = generate_population_insight(df_pop, dong_name_norm)
-                    evidence_context += f"\n\n[행정동 인구 데이터 기반]\n{population_insight}"
-                else:
-                    evidence_context += "\n\n[행정동 인구 데이터 기반]\n주소에서 행정동을 추출할 수 없습니다."
-            
-            # 대신 prompt 만들기 직전, Gemini에 보낼 질문에서는 금지어 제거
-            forbidden_terms = ["인구", "거주", "연령", "성비", "고객층", "주거", "생활", "생활권",]
-            filtered_question = question
-            for term in forbidden_terms:
-                filtered_question = filtered_question.replace(term, "")
-            
-            context_prompt = build_marketing_prompt(
-                store_name=store_name,
-                store_category=store_category,
-                age_comparison_text="",
-                delivery_rank_str="",
-                user_question=filtered_question,  # 🔥 여기서만 필터링된 질문 사용
-                trend_summary_text=trend_summary_text,
-                evidence_context=evidence_context,
-                metric_catalog_text=catalog_text
-            )
-            
-            answer_text = generate_answer_with_model(context_prompt, provider="gemini")
+                if any(k in question for k in ["인구", "거주", "연령", "고객층", "유동", "주거", "성비", "생활", "생활권", "주변", "미래 타겟", "미래타겟"]):
+                    df_pop = load_population()
+                    dong_name_norm = st.session_state.get("current_dong")
+                    if dong_name_norm:
+                        population_insight = generate_population_insight(df_pop, dong_name_norm)
+                        evidence_context += f"\n\n[행정동 인구 데이터 기반]\n{population_insight}"
+                    else:
+                        evidence_context += "\n\n[행정동 인구 데이터 기반]\n주소에서 행정동을 추출할 수 없습니다."
+                
+                # 대신 prompt 만들기 직전, Gemini에 보낼 질문에서는 금지어 제거
+                forbidden_terms = ["인구", "거주", "연령", "성비", "고객층", "주거", "생활", "생활권",]
+                filtered_question = question
+                for term in forbidden_terms:
+                    filtered_question = filtered_question.replace(term, "")
+                
+                context_prompt = build_marketing_prompt(
+                    store_name=store_name,
+                    store_category=store_category,
+                    age_comparison_text="",
+                    delivery_rank_str="",
+                    user_question=filtered_question,  # 🔥 여기서만 필터링된 질문 사용
+                    trend_summary_text=trend_summary_text,
+                    evidence_context=evidence_context,
+                    metric_catalog_text=catalog_text
+                )
+                
+                answer_text = generate_answer_with_model(context_prompt, provider="gemini")
 
                 promos, used_keys = _parse_promos_from_llm(answer_text)
                 final_html = make_promo_cards_html(promos)
@@ -1302,3 +1302,4 @@ if pending_q:
         print("❌ Chatbot block error:", e)
         with st.chat_message("assistant"):
             st.error("답변 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.") 
+
