@@ -44,7 +44,11 @@ def _strip_md_strike(s: str) -> str:
 
 # main.py의 _parse_promos_from_llm 함수 아래에 추가
 
-# main.py 파일 상단에 추가해주세요.
+import streamlit as st
+import os
+
+st.write("GOOGLE_API_KEY loaded:", bool(os.getenv("GOOGLE_API_KEY")))
+st.write("OPENAI_API_KEY loaded:", bool(os.getenv("OPENAI_API_KEY")))
 
 def _parse_promos_from_llm(raw: str):
     """
@@ -1293,4 +1297,5 @@ if pending_q:
     except Exception as e:
         print("❌ Chatbot block error:", e)
         with st.chat_message("assistant"):
+
             st.error("답변 생성 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.") 
