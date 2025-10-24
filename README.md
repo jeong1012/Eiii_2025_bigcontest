@@ -3,6 +3,5 @@
 팀 Ei i!의 **우리 가게 마케팅 파트너 Ei i!**
 
   ## 실행 결과 (서비스 웹 페이지)
-https://eiii-2025bigcontest.streamlit.app/
 - 위 웹 페이지는 Streamlit Cloud를 이용해 배포되었습니다.
 - python 3.11.9 사용
